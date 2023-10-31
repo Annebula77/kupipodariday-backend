@@ -3,8 +3,10 @@ import { ConflictException, NotFoundException, Injectable } from '@nestjs/common
 import { Repository, Like } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import { Wish } from '../wishes/entities/wish.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { WishesService } from '../wishes/wishes.service';
 import * as bcrypt from 'bcrypt';
 
 
@@ -13,6 +15,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private readonly wishesService: WishesService,
   ) { }
 
   async create(createUserDto: CreateUserDto) {
@@ -64,4 +67,18 @@ export class UsersService {
     const user = await this.usersRepository.findOne({ where: { id } });
     return this.usersRepository.delete(user);
   }
+
+  async getUserWishes(userId: number): Promise<Wish[]> {
+    const user = await this.usersRepository.findOne({ where: { id: userId }, relations: ['wishes'] });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user.wishes;
+  }
+
+  async getUserWish(userId: number, wishId: number): Promise<Wish> {
+    return this.wishesService.findUserWishById(wishId, userId);  // Вызовите метод findOne из WishesService
+  }
+
+
 }
