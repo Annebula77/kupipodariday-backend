@@ -5,6 +5,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  ManyToMany,
+  JoinTable,
   OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
@@ -36,4 +38,7 @@ export class Wish {
   offers: Offer[];
   @Column('int', { default: 0 })
   copied: number;
+  @ManyToMany(() => User)
+  @JoinTable()
+  wishers: User[];
 }

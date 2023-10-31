@@ -1,26 +1,39 @@
-import { Injectable } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Offer } from './entities/offer.entity';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { UpdateOfferDto } from './dto/update-offer.dto';
 
 @Injectable()
 export class OffersService {
-  create(createOfferDto: CreateOfferDto) {
-    return 'This action adds a new offer';
+  constructor(
+    @InjectRepository(Offer)
+    private offersRepository: Repository<Offer>,
+  ) { }
+
+  async create(createOfferDto: CreateOfferDto): Promise<Offer> {
+    const offer = this.offersRepository.create(createOfferDto);
+    return this.offersRepository.save(offer);
   }
 
-  findAll() {
-    return `This action returns all offers`;
+  async findOne(id: number): Promise<Offer> {
+    const offer = await this.offersRepository.findOne({ where: { id } });
+    if (!offer) {
+      throw new NotFoundException('Offer not found');
+    }
+    return offer;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} offer`;
+  async update(id: number, updateOfferDto: UpdateOfferDto): Promise<Offer> {
+    const offer = await this.findOne(id);
+    const updatedOffer = this.offersRepository.merge(offer, updateOfferDto);
+    return this.offersRepository.save(updatedOffer);
   }
 
-  update(id: number, updateOfferDto: UpdateOfferDto) {
-    return `This action updates a #${id} offer`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} offer`;
+  async remove(id: number): Promise<void> {
+    const offer = await this.findOne(id);
+    await this.offersRepository.remove(offer);
   }
 }
