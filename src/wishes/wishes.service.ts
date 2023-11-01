@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, In } from 'typeorm';
 import { Wish } from './entities/wish.entity';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
@@ -84,6 +84,11 @@ export class WishesService {
     return this.wishesRepository.find({ where: { name: Like(`%${name}%`) } });
   }
 
+  async searchWishesByDescription(description: string): Promise<Wish[]> {
+    return this.wishesRepository.find({ where: { description: Like(`%${description}%`) } });
+  }
+
+
   async getWishInfo(id: number): Promise<Wish> {
     const wish = await this.wishesRepository.findOne({
       where: { id: id },
@@ -118,4 +123,13 @@ export class WishesService {
     return this.wishesRepository.save(newWish);
   }
 
+  async findWishesByIds(ids: number[]): Promise<Wish[]> {
+    // Используйте метод findBy репозитория TypeORM с оператором In для получения массива объектов Wish
+    const wishes = await this.wishesRepository.findBy({ id: In(ids) });
+    if (wishes.length !== ids.length) {
+      // Это проверка на случай, если один или несколько идентификаторов не найдены в базе данных
+      throw new NotFoundException('One or more wishes not found');
+    }
+    return wishes;
+  }
 }
