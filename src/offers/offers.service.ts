@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Offer } from './entities/offer.entity';
 import { WishesService } from '../wishes/wishes.service';
 import { CreateOfferDto } from './dto/create-offer.dto';
+import { NOT_FOUND_GENERAL, WISH_OVERPRICE_ERROR, WISH_SELF_FORBIDDEN } from '../utils/consts';
 
 @Injectable()
 export class OffersService {
@@ -18,10 +19,10 @@ export class OffersService {
   async create(createOfferDto: CreateOfferDto, userId: number): Promise<Offer> {
     const wish = await this.wishesService.getWishInfo(createOfferDto.wishId);
     if (wish.owner.id === userId) {
-      throw new ForbiddenException('You cannot contribute to your own wish');
+      throw new ForbiddenException(WISH_SELF_FORBIDDEN);
     }
     if (wish.raised + createOfferDto.amount > wish.price) {
-      throw new ForbiddenException('The total amount exceeds the price of the wish');
+      throw new ForbiddenException(WISH_OVERPRICE_ERROR);
     }
     const offer = this.offersRepository.create({
       ...createOfferDto,
@@ -33,7 +34,7 @@ export class OffersService {
   async findOne(id: number): Promise<Offer> {
     const offer = await this.offersRepository.findOne({ where: { id } });
     if (!offer) {
-      throw new NotFoundException('Offer not found');
+      throw new NotFoundException(NOT_FOUND_GENERAL);
     }
     return offer;
   }

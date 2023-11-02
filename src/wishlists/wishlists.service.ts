@@ -11,6 +11,7 @@ import { User } from '../users/entities/user.entity';
 import { WishesService } from '../wishes/wishes.service';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
+import { NOT_FOUND_GENERAL, USER_NOT_FOUND, WISH_OWNER_FORBIDDEN } from '../utils/consts';
 
 @Injectable()
 export class WishlistsService {
@@ -29,7 +30,7 @@ export class WishlistsService {
   ): Promise<Wishlist> {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(USER_NOT_FOUND);
     }
 
     // Получаем объекты Wish из базы данных
@@ -52,12 +53,12 @@ export class WishlistsService {
       relations: ['owner', 'items']
     });
     if (!wishlist) {
-      throw new NotFoundException('Wishlist not found');
+      throw new NotFoundException(NOT_FOUND_GENERAL);
     }
 
     // Проверка на владельца
     if (wishlist.owner.id !== userId) {
-      throw new ForbiddenException('You do not have permission to edit this wishlist');
+      throw new ForbiddenException(WISH_OWNER_FORBIDDEN);
     }
 
     if (updateWishlistDto.itemIds) {
@@ -90,7 +91,7 @@ export class WishlistsService {
       relations: ['owner']
     });
     if (!wishlist) {
-      throw new NotFoundException('Wishlist not found');
+      throw new NotFoundException(NOT_FOUND_GENERAL);
     }
 
     // Проверка на владельца
