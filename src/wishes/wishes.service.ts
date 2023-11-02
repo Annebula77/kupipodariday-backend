@@ -1,10 +1,11 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, In } from 'typeorm';
 import { Wish } from './entities/wish.entity';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
+import { NOT_FOUND_GENERAL, WISH_OWNER_FORBIDDEN } from '../utils/consts';
 
 @Injectable()
 export class WishesService {
@@ -27,12 +28,12 @@ export class WishesService {
     });
 
     if (!wish) {
-      throw new NotFoundException('Wish not found');
+      throw new NotFoundException(NOT_FOUND_GENERAL);
     }
 
     // Проверка на владельца и на то, что на подарок еще никто не скинулся
     if (wish.owner.id !== userId || wish.raised > 0) {
-      throw new ForbiddenException('You do not have permission to edit this wish');
+      throw new ForbiddenException(WISH_OWNER_FORBIDDEN);
     }
 
     const updatedWish = this.wishesRepository.merge(wish, updateWishDto);
@@ -47,12 +48,12 @@ export class WishesService {
     });
 
     if (!wish) {
-      throw new NotFoundException('Wish not found');
+      throw new NotFoundException(NOT_FOUND_GENERAL);
     }
 
     // Проверка на владельца
     if (wish.owner.id !== userId) {
-      throw new ForbiddenException('You do not have permission to delete this wish');
+      throw new ForbiddenException(WISH_OWNER_FORBIDDEN);
     }
 
     await this.wishesRepository.remove(wish);
@@ -75,7 +76,7 @@ export class WishesService {
   async findUserWishById(id: number, ownerId: number): Promise<Wish> {
     const wish = await this.wishesRepository.findOne({ where: { id, owner: { id: ownerId } } });
     if (!wish) {
-      throw new NotFoundException('Wish not found');
+      throw new NotFoundException(NOT_FOUND_GENERAL);
     }
     return wish;
   }
@@ -84,13 +85,18 @@ export class WishesService {
     return this.wishesRepository.find({ where: { name: Like(`%${name}%`) } });
   }
 
+  async searchWishesByDescription(description: string): Promise<Wish[]> {
+    return this.wishesRepository.find({ where: { description: Like(`%${description}%`) } });
+  }
+
+
   async getWishInfo(id: number): Promise<Wish> {
     const wish = await this.wishesRepository.findOne({
       where: { id: id },
       relations: ['owner', 'wishers', 'offers']
     });
     if (!wish) {
-      throw new NotFoundException('Wish not found');
+      throw new NotFoundException(NOT_FOUND_GENERAL);
     }
     return wish;
   }
@@ -99,7 +105,7 @@ export class WishesService {
     // Находим существующий подарок по его id
     const existingWish = await this.wishesRepository.findOne({ where: { id } });
     if (!existingWish) {
-      throw new NotFoundException('Wish not found');
+      throw new NotFoundException(NOT_FOUND_GENERAL);
     }
 
     // Увеличиваем счетчик copied у существующего подарка на 1
@@ -118,4 +124,13 @@ export class WishesService {
     return this.wishesRepository.save(newWish);
   }
 
+  async findWishesByIds(ids: number[]): Promise<Wish[]> {
+    // Используйте метод findBy репозитория TypeORM с оператором In для получения массива объектов Wish
+    const wishes = await this.wishesRepository.findBy({ id: In(ids) });
+    if (wishes.length !== ids.length) {
+      // Это проверка на случай, если один или несколько идентификаторов не найдены в базе данных
+      throw new NotFoundException(NOT_FOUND_GENERAL);
+    }
+    return wishes;
+  }
 }

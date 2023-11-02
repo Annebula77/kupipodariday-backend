@@ -8,6 +8,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { WishesService } from '../wishes/wishes.service';
 import * as bcrypt from 'bcrypt';
+import { USER_ALREADY_EXISTS_CONFLICT, USER_NOT_FOUND } from '../utils/consts';
 
 
 @Injectable()
@@ -25,7 +26,7 @@ export class UsersService {
         { email: createUserDto.email }]
       });
     if (existingUser) {
-      throw new ConflictException('User with this username or email already exists');
+      throw new ConflictException(USER_ALREADY_EXISTS_CONFLICT);
     }
     const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
     const user = this.usersRepository.create({
@@ -35,10 +36,24 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
+  async comparePassword(enteredPassword: string, dbPassword: string): Promise<boolean> {
+    return await bcrypt.compare(enteredPassword, dbPassword);
+  }
+
+  async findUserOwnProfile(quiry: string): Promise<User> {
+    return this.usersRepository.findOne({
+      where: [
+        { username: Like(`%${quiry}%`) },
+        { password: Like(`%${quiry}%`) },
+      ],
+    })
+  }
+
+
   async findUser(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(USER_NOT_FOUND);
     }
     return user;
   }
@@ -71,7 +86,7 @@ export class UsersService {
   async getUserWishes(userId: number): Promise<Wish[]> {
     const user = await this.usersRepository.findOne({ where: { id: userId }, relations: ['wishes'] });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(USER_NOT_FOUND);
     }
     return user.wishes;
   }
