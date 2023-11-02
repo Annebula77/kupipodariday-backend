@@ -32,7 +32,7 @@ export class AuthController {
   @ApiForbiddenResponse({ description: USER_ALREADY_EXISTS_CONFLICT })
   async signupUser(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
-    /* При регистрации создаём пользователя и генерируем для него токен */
+    /* При регистрации логиним пользователя и определяем для него токен */
     return this.authService.login(user);
   }
 
