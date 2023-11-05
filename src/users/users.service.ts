@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { ConflictException, NotFoundException, Injectable } from '@nestjs/common';
 import { Repository, Like } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,7 +5,6 @@ import { User } from './entities/user.entity';
 import { Wish } from '../wishes/entities/wish.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { WishesService } from '../wishes/wishes.service';
 import * as bcrypt from 'bcrypt';
 import { USER_ALREADY_EXISTS_CONFLICT, USER_NOT_FOUND } from '../utils/consts';
 
@@ -16,7 +14,6 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-    private readonly wishesService: WishesService,
   ) { }
 
   async create(createUserDto: CreateUserDto) {
@@ -58,11 +55,19 @@ export class UsersService {
     return user;
   }
 
-  async searchUsers(quiry: string): Promise<User> {
-    return this.usersRepository.findOne({
+  async searchUsers(quiry: string): Promise<User[]> {
+    return this.usersRepository.find({
       where: [
         { username: Like(`%${quiry}%`) },
         { email: Like(`%${quiry}%`) },
+      ],
+    })
+  }
+
+  async findUserByUsername(quiry: string): Promise<User> {
+    return this.usersRepository.findOne({
+      where: [
+        { username: Like(`%${quiry}%`) },
       ],
     })
   }
@@ -78,11 +83,6 @@ export class UsersService {
     return this.usersRepository.save(updatedUser);
   }
 
-  async remove(id: number) {
-    const user = await this.usersRepository.findOne({ where: { id } });
-    return this.usersRepository.delete(user);
-  }
-
   async getUserWishes(userId: number): Promise<Wish[]> {
     const user = await this.usersRepository.findOne({ where: { id: userId }, relations: ['wishes'] });
     if (!user) {
@@ -91,9 +91,15 @@ export class UsersService {
     return user.wishes;
   }
 
-  async getUserWish(userId: number, wishId: number): Promise<Wish> {
-    return this.wishesService.findUserWishById(wishId, userId);  // Вызовите метод findOne из WishesService
+  async getOtherUserWishes(username: string): Promise<Wish[]> {
+    const user = await this.usersRepository.findOne({
+      where: { username },
+      relations: ['wishes']
+    });
+    if (!user) {
+      throw new NotFoundException(USER_NOT_FOUND);
+    }
+    return user.wishes;
   }
-
 
 }

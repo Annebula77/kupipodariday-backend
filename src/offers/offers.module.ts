@@ -6,5 +6,4 @@ import { OffersController } from './offers.controller';
   controllers: [OffersController],
   providers: [OffersService],
 })
-// eslint-disable-next-line prettier/prettier
 export class OffersModule { }

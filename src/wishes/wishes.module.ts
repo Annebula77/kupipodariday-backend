@@ -6,5 +6,5 @@ import { WishesController } from './wishes.controller';
   controllers: [WishesController],
   providers: [WishesService],
 })
-// eslint-disable-next-line prettier/prettier
+
 export class WishesModule { }
