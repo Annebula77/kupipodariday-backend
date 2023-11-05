@@ -38,5 +38,4 @@ dotenv.config();
   providers: [AppService],
 })
 
-// eslint-disable-next-line prettier/prettier
 export class AppModule { }

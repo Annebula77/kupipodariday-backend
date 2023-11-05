@@ -1,4 +1,3 @@
-//throw new UnauthorizedException
 
 export const UNAUTHORISED_USER = 'There is no user with such login or password';
 
