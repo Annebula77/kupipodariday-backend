@@ -10,7 +10,7 @@ import { UsersService } from '../users/users.service';
 import { USER_ALREADY_EXISTS_CONFLICT, USER_NOT_FOUND } from '../utils/consts';
 
 @ApiTags('Auth')
-@Controller('auth')
+@Controller()
 export class AuthController {
   constructor(
     private authService: AuthService,

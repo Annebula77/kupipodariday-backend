@@ -35,7 +35,7 @@ export class CreateWishDto {
   })
   @IsNumber()
   @Min(0)
-  raised: number;
+  raised?: number = 0;
 
   @ApiProperty({ description: 'The ID of the User who owns the wish' })
   ownerId: number;

@@ -7,6 +7,11 @@ dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: '*', // Указать конкретный домен или использовать '*' для разрешения всех доменов
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, authorization',
+  });
 
   const config = new DocumentBuilder()
     .setTitle('GiftService API')

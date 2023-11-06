@@ -16,7 +16,7 @@ export class WishesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'Create a new wish' })
-  @ApiResponse({ status: 201, description: 'Wish created', type: Wish })
+  @ApiResponse({ status: 201, description: 'Wish created', type: CreateWishDto })
   @ApiBody({ type: CreateWishDto })
   async createWish(@Body() createWishDto: CreateWishDto,
     @Request() req: Request & { user: User }) {
@@ -41,7 +41,7 @@ export class WishesController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Get a wish by ID' })
-  @ApiResponse({ status: 200, description: 'Wish retrieved', type: Wish })
+  @ApiResponse({ status: 200, description: 'Wish retrieved', type: CreateWishDto })
   @ApiParam({ name: 'id', description: 'ID of the wish' })
   async findWishById(@Param('id') id: string) {
     return this.wishesService.getWishInfo(+id);
@@ -50,7 +50,7 @@ export class WishesController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Update a wish by ID' })
-  @ApiResponse({ status: 200, description: 'Wish updated', type: Wish })
+  @ApiResponse({ status: 200, description: 'Wish updated', type: UpdateWishDto })
   @ApiParam({ name: 'id', description: 'ID of the wish to update' })
   @ApiBody({ type: UpdateWishDto })
   async updateWish(@Param('id') id: string,
