@@ -14,7 +14,6 @@ export class AuthService {
   async validateUser(loginRequestCreds: LoginRequestUserDto) {
     const user = await this.usersService.findUserOwnProfile(loginRequestCreds.username);
     if (user && (await this.usersService.comparePassword(loginRequestCreds.password, user.password))) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...result } = user;
       return result;
     }

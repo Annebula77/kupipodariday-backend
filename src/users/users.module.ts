@@ -8,7 +8,7 @@ import { AuthModule } from '../auth/auth.module';
 import { Wish } from '../wishes/entities/wish.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Wish]), AuthModule, JwtAuthGuard],
+  imports: [TypeOrmModule.forFeature([User, Wish])],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],
