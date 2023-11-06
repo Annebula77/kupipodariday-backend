@@ -70,8 +70,11 @@ export class WishlistsService {
   }
 
 
-  async findAll(): Promise<Wishlist[]> {
-    return this.wishlistsRepository.find({ relations: ['owner', 'items'] });
+  async findAll(userId: number): Promise<Wishlist[]> {
+    return this.wishlistsRepository.find({
+      where: { owner: { id: userId } },
+      relations: ['owner', 'items']
+    });
   }
 
   async findOne(id: number): Promise<Wishlist> {
@@ -111,5 +114,6 @@ export class WishlistsService {
       relations: ['owner', 'items'],
     });
   }
+
 }
 
