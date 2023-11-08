@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Request, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam, ApiNotFoundResponse, ApiForbiddenResponse } from '@nestjs/swagger';
 import { WishlistsService } from './wishlists.service';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { User } from '../users/entities/user.entity';
 import { Wishlist } from './entities/wishlist.entity';
+import { NOT_FOUND_GENERAL, USER_NOT_FOUND, WISH_OWNER_FORBIDDEN } from '../utils/consts';
 
 @ApiTags('wishlists')
 @ApiBearerAuth()
@@ -18,6 +19,7 @@ export class WishlistsController {
   @ApiOperation({ summary: 'Create a new wishlist' })
   @ApiResponse({ status: 201, description: 'The wishlist has been successfully created.', type: Wishlist })
   @ApiBody({ type: CreateWishlistDto })
+  @ApiNotFoundResponse({ description: USER_NOT_FOUND })
   createWishlist(
     @Body() createWishlistDto: CreateWishlistDto,
     @Request() req: Request & { user: User }
@@ -36,6 +38,7 @@ export class WishlistsController {
   @ApiOperation({ summary: 'Get wishlist by ID' })
   @ApiResponse({ status: 200, description: 'Wishlist retrieved successfully.', type: Wishlist })
   @ApiParam({ name: 'id', type: 'string', description: 'Wishlist ID' })
+  @ApiNotFoundResponse({ description: NOT_FOUND_GENERAL })
   getWishList(@Param('id') id: string): Promise<Wishlist> {
     return this.wishlistsService.findOne(+id);
   }
@@ -44,6 +47,8 @@ export class WishlistsController {
   @ApiOperation({ summary: 'Update wishlist by ID' })
   @ApiResponse({ status: 200, description: 'Wishlist updated successfully.', type: Wishlist })
   @ApiParam({ name: 'id', type: 'string', description: 'Wishlist ID' })
+  @ApiNotFoundResponse({ description: NOT_FOUND_GENERAL }) // Если список желаний не найден
+  @ApiForbiddenResponse({ description: WISH_OWNER_FORBIDDEN }) // Если пользователь не является владельцем
   @ApiBody({ type: UpdateWishlistDto })
   update(
     @Param('id') id: string,
@@ -57,6 +62,8 @@ export class WishlistsController {
   @ApiOperation({ summary: 'Delete wishlist by ID' })
   @ApiResponse({ status: 200, description: 'Wishlist deleted successfully.' })
   @ApiParam({ name: 'id', type: 'string', description: 'Wishlist ID' })
+  @ApiNotFoundResponse({ description: NOT_FOUND_GENERAL })
+  @ApiForbiddenResponse({ description: WISH_OWNER_FORBIDDEN })
   remove(@Param('id') id: string, @Request() req: Request & { user: User }): Promise<void> {
     return this.wishlistsService.remove(+id, req.user.id);
   }

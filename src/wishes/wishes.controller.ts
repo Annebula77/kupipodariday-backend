@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UseGuards, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam, ApiForbiddenResponse, ApiNotFoundResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WishesService } from './wishes.service';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { User } from '../users/entities/user.entity';
 import { Wish } from './entities/wish.entity';
+import { NOT_FOUND_GENERAL, WISH_OWNER_FORBIDDEN } from '../utils/consts';
 
 @ApiTags('wishes')
 @ApiBearerAuth()
@@ -16,8 +17,9 @@ export class WishesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'Create a new wish' })
-  @ApiResponse({ status: 201, description: 'Wish created', type: Wish })
+  @ApiResponse({ status: 201, description: 'Wish created', type: CreateWishDto })
   @ApiBody({ type: CreateWishDto })
+  @ApiForbiddenResponse({ description: WISH_OWNER_FORBIDDEN })
   async createWish(@Body() createWishDto: CreateWishDto,
     @Request() req: Request & { user: User }) {
     return this.wishesService.create(createWishDto, req.user.id);
@@ -41,7 +43,7 @@ export class WishesController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Get a wish by ID' })
-  @ApiResponse({ status: 200, description: 'Wish retrieved', type: Wish })
+  @ApiResponse({ status: 200, description: 'Wish retrieved', type: CreateWishDto })
   @ApiParam({ name: 'id', description: 'ID of the wish' })
   async findWishById(@Param('id') id: string) {
     return this.wishesService.getWishInfo(+id);
@@ -50,9 +52,11 @@ export class WishesController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Update a wish by ID' })
-  @ApiResponse({ status: 200, description: 'Wish updated', type: Wish })
+  @ApiResponse({ status: 200, description: 'Wish updated', type: UpdateWishDto })
   @ApiParam({ name: 'id', description: 'ID of the wish to update' })
   @ApiBody({ type: UpdateWishDto })
+  @ApiNotFoundResponse({ description: NOT_FOUND_GENERAL }) // Если желание не найдено
+  @ApiForbiddenResponse({ description: WISH_OWNER_FORBIDDEN }) // Если попытка обновить не своё желание
   async updateWish(@Param('id') id: string,
     @Body() updateWishDto: UpdateWishDto,
     @Request() req: Request & { user: User }
@@ -65,6 +69,8 @@ export class WishesController {
   @ApiOperation({ summary: 'Delete a wish by ID' })
   @ApiResponse({ status: 204, description: 'Wish deleted' })
   @ApiParam({ name: 'id', description: 'ID of the wish to delete' })
+  @ApiNotFoundResponse({ description: NOT_FOUND_GENERAL }) // Если желание не найдено
+  @ApiForbiddenResponse({ description: WISH_OWNER_FORBIDDEN }) // Если попытка удалить не своё желание
   async remove(@Param('id') id: string,
     @Request() req: Request & { user: User }) {
     return this.wishesService.remove(+id, req.user.id);

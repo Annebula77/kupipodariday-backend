@@ -15,8 +15,9 @@ export class WishesService {
   ) { }
 
   async create(createWishDto: CreateWishDto, ownerId: number): Promise<Wish> {
-    const wish = await this.wishesRepository.create({
+    const wish = this.wishesRepository.create({
       ...createWishDto,
+      raised: createWishDto.raised !== undefined ? createWishDto.raised : 0, // Здесь устанавливаем значение по умолчанию, если raised не предоставлено
       owner: { id: ownerId },
     });
     return this.wishesRepository.save(wish);
