@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Wish } from '../wishes/entities/wish.entity';
 import { SearchUsersDto } from './dto/search-user.dto';
+
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -23,6 +24,7 @@ export class UsersController {
 
   @Patch('me')
   @ApiOperation({ summary: 'Update current user profile' })
+  @ApiBody({ type: UpdateUserDto })
   @ApiResponse({ status: 200, description: 'Profile updated', type: User })
   async updateOwnerPrifile(
     @Body() updateUserDto: UpdateUserDto,

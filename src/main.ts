@@ -17,7 +17,7 @@ async function bootstrap() {
     .setTitle('GiftService API')
     .setDescription('Service for gifts and wishlists')
     .setVersion('1.0')
-    .addTag('my-tag')
+    .addTag('api')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
