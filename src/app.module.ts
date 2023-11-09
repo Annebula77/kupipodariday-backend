@@ -11,6 +11,9 @@ import { Wish } from './wishes/entities/wish.entity';
 import { Wishlist } from './wishlists/entities/wishlist.entity';
 import { Offer } from './offers/entities/offer.entity';
 import { AuthModule } from './auth/auth.module';
+import { WinstonModule } from 'nest-winston/dist/winston.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import * as winston from 'winston';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -28,6 +31,23 @@ dotenv.config();
       synchronize: true,
     }),
     TypeOrmModule.forFeature([User, Wish, Wishlist, Offer]),
+    WinstonModule.forRoot({
+      levels: {
+        critical_error: 0,
+        error: 1,
+        special_warning: 2,
+        another_log_level: 3,
+        info: 4,
+      },
+      transports: [
+        new winston.transports.Console({ format: winston.format.simple() }),
+        new winston.transports.File({ filename: 'error.log', level: 'error' }),
+      ],
+    }),
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 10,
+    } as any),
     UsersModule,
     WishesModule,
     WishlistsModule,
@@ -37,5 +57,4 @@ dotenv.config();
   controllers: [AppController],
   providers: [AppService],
 })
-
-export class AppModule { }
+export class AppModule {}

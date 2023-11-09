@@ -11,7 +11,6 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-
 @Module({
   imports: [
     UsersModule,
@@ -25,4 +24,4 @@ dotenv.config();
   exports: [AuthService],
   controllers: [AuthController],
 })
-export class AuthModule { }
+export class AuthModule {}
