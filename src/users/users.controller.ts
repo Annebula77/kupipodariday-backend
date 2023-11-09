@@ -1,5 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBody,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -7,18 +22,19 @@ import { User } from './entities/user.entity';
 import { Wish } from '../wishes/entities/wish.entity';
 import { SearchUsersDto } from './dto/search-user.dto';
 
-
 @ApiTags('users')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get('me')
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Profile retrieved', type: User })
-  async getOwnerProfile(@Request() req: Request & { user: User }): Promise<User> {
+  async getOwnerProfile(
+    @Request() req: Request & { user: User },
+  ): Promise<User> {
     return req.user;
   }
 
@@ -28,7 +44,8 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Profile updated', type: User })
   async updateOwnerPrifile(
     @Body() updateUserDto: UpdateUserDto,
-    @Request() req: Request & { user: User }): Promise<User> {
+    @Request() req: Request & { user: User },
+  ): Promise<User> {
     return this.usersService.update(req.user.id, updateUserDto);
   }
 
@@ -36,7 +53,8 @@ export class UsersController {
   @ApiOperation({ summary: 'Get current user wishes' })
   @ApiResponse({ status: 200, description: 'Wishes retrieved', type: [Wish] })
   async getOwnerWishes(
-    @Request() req: Request & { user: User }): Promise<Wish[]> {
+    @Request() req: Request & { user: User },
+  ): Promise<Wish[]> {
     return this.usersService.getUserWishes(req.user.id);
   }
 
@@ -59,8 +77,6 @@ export class UsersController {
   @ApiOperation({ summary: 'Get wishes of a user by username' })
   @ApiResponse({ status: 200, description: 'Wishes retrieved', type: [Wish] })
   async getUserWishes(@Param('username') username: string): Promise<Wish[]> {
-    return this.usersService.getOtherUserWishes(username)
+    return this.usersService.getOtherUserWishes(username);
   }
-
-
 }

@@ -10,7 +10,11 @@ import { User } from '../users/entities/user.entity';
 import { WishesService } from '../wishes/wishes.service';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
-import { NOT_FOUND_GENERAL, USER_NOT_FOUND, WISH_OWNER_FORBIDDEN } from '../utils/consts';
+import {
+  NOT_FOUND_GENERAL,
+  USER_NOT_FOUND,
+  WISH_OWNER_FORBIDDEN,
+} from '../utils/consts';
 
 @Injectable()
 export class WishlistsService {
@@ -20,8 +24,7 @@ export class WishlistsService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private readonly wishesService: WishesService,
-  ) { }
-
+  ) {}
 
   async create(
     createWishlistDto: CreateWishlistDto,
@@ -46,10 +49,14 @@ export class WishlistsService {
     return this.wishlistsRepository.save(wishlist);
   }
 
-  async update(id: number, updateWishlistDto: UpdateWishlistDto, userId: number): Promise<Wishlist> {
+  async update(
+    id: number,
+    updateWishlistDto: UpdateWishlistDto,
+    userId: number,
+  ): Promise<Wishlist> {
     const wishlist = await this.wishlistsRepository.findOne({
       where: { id: id },
-      relations: ['owner', 'items']
+      relations: ['owner', 'items'],
     });
     if (!wishlist) {
       throw new NotFoundException(NOT_FOUND_GENERAL);
@@ -61,25 +68,29 @@ export class WishlistsService {
     }
 
     if (updateWishlistDto.itemIds) {
-      wishlist.items = await this.wishesService.findWishesByIds(updateWishlistDto.itemIds);
+      wishlist.items = await this.wishesService.findWishesByIds(
+        updateWishlistDto.itemIds,
+      );
     }
 
-    const updatedWishlist = this.wishlistsRepository.merge(wishlist, updateWishlistDto);
+    const updatedWishlist = this.wishlistsRepository.merge(
+      wishlist,
+      updateWishlistDto,
+    );
     return this.wishlistsRepository.save(updatedWishlist);
   }
-
 
   async findAll(userId: number): Promise<Wishlist[]> {
     return this.wishlistsRepository.find({
       where: { owner: { id: userId } },
-      relations: ['owner', 'items']
+      relations: ['owner', 'items'],
     });
   }
 
   async findOne(id: number): Promise<Wishlist> {
     const wishlist = await this.wishlistsRepository.findOne({
       where: { id: id },
-      relations: ['owner', 'items']
+      relations: ['owner', 'items'],
     });
     if (!wishlist) {
       throw new NotFoundException(`Wishlist #${id} not found`);
@@ -90,7 +101,7 @@ export class WishlistsService {
   async remove(id: number, userId: number): Promise<void> {
     const wishlist = await this.wishlistsRepository.findOne({
       where: { id: id },
-      relations: ['owner']
+      relations: ['owner'],
     });
     if (!wishlist) {
       throw new NotFoundException(NOT_FOUND_GENERAL);
@@ -98,7 +109,9 @@ export class WishlistsService {
 
     // Проверка на владельца
     if (wishlist.owner.id !== userId) {
-      throw new ForbiddenException('You do not have permission to delete this wishlist');
+      throw new ForbiddenException(
+        'You do not have permission to delete this wishlist',
+      );
     }
 
     await this.wishlistsRepository.remove(wishlist);
@@ -113,6 +126,4 @@ export class WishlistsService {
       relations: ['owner', 'items'],
     });
   }
-
 }
-

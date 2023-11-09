@@ -1,4 +1,3 @@
-
 export const UNAUTHORISED_USER = 'There is no user with such login or password';
 
 export const WISH_SELF_FORBIDDEN = 'You cannot contribute to your own wish';

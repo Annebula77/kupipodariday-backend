@@ -1,10 +1,18 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Offer } from './entities/offer.entity';
 import { WishesService } from '../wishes/wishes.service';
 import { CreateOfferDto } from './dto/create-offer.dto';
-import { NOT_FOUND_GENERAL, WISH_OVERPRICE_ERROR, WISH_SELF_FORBIDDEN } from '../utils/consts';
+import {
+  NOT_FOUND_GENERAL,
+  WISH_OVERPRICE_ERROR,
+  WISH_SELF_FORBIDDEN,
+} from '../utils/consts';
 
 @Injectable()
 export class OffersService {
@@ -12,8 +20,7 @@ export class OffersService {
     @InjectRepository(Offer)
     private offersRepository: Repository<Offer>,
     private wishesService: WishesService,
-  ) { }
-
+  ) {}
 
   async create(createOfferDto: CreateOfferDto, userId: number): Promise<Offer> {
     const wish = await this.wishesService.getWishInfo(createOfferDto.wishId);
@@ -25,7 +32,7 @@ export class OffersService {
     }
     const offer = this.offersRepository.create({
       ...createOfferDto,
-      user: { id: userId }
+      user: { id: userId },
     });
     return this.offersRepository.save(offer);
   }
@@ -41,11 +48,4 @@ export class OffersService {
   async findAll(): Promise<Offer[]> {
     return this.offersRepository.find({ relations: ['owner', 'item'] });
   }
-
-
 }
-
-
-
-
-

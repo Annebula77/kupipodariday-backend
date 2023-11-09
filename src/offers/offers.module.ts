@@ -11,9 +11,10 @@ import { Offer } from './entities/offer.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Offer, Wish, User]),
-    UsersModule, WishesModule
+    UsersModule,
+    WishesModule,
   ],
   controllers: [OffersController],
   providers: [OffersService],
 })
-export class OffersModule { }
+export class OffersModule {}

@@ -11,11 +11,11 @@ import { WishesModule } from '../wishes/wishes.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Wishlist, Wish, User]),
-    UsersModule, WishesModule
+    UsersModule,
+    WishesModule,
   ],
   controllers: [WishlistsController],
   providers: [WishlistsService],
   exports: [WishlistsService],
 })
-
-export class WishlistsModule { }
+export class WishlistsModule {}
