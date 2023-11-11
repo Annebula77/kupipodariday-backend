@@ -1,54 +1,73 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   ManyToOne,
   ManyToMany,
   JoinTable,
   OneToMany,
 } from 'typeorm';
+import { MyBaseEntity } from '../../utils/base.entity';
 import { User } from '../../users/entities/user.entity';
 import { Offer } from '../../offers/entities/offer.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsUrl, IsDecimal, IsInt, ValidateNested, IsArray } from 'class-validator';
+import { Type } from 'class-transformer';
 
 @Entity()
-export class Wish {
-  @ApiProperty({ example: 1 })
-  @PrimaryGeneratedColumn()
-  id: number;
-  @ApiProperty({ example: Date })
-  @CreateDateColumn()
-  createdAt: Date;
-  @ApiProperty({ example: Date })
-  @UpdateDateColumn()
-  updateAt: Date;
-  @ApiProperty({ example: 'Nick' })
+export class Wish extends MyBaseEntity {
+
+  @ApiProperty({ example: 'Chair' })
+  @IsString()
+  @IsNotEmpty()
   @Column()
   name: string;
-  @ApiProperty({ example: 'link' })
+
+  @ApiProperty({ example: 'http://example.com/product' })
+  @IsUrl()
   @Column()
   link: string;
-  @ApiProperty({ example: 'string' })
+
+  @ApiProperty({ example: 'http://example.com/image.png' })
+  @IsUrl()
   @Column()
   image: string;
-  @ApiProperty({ example: 2 })
+
+  @ApiProperty({ example: '100.00' })
+  @IsDecimal({ decimal_digits: '2' })
   @Column('decimal', { scale: 2 })
   price: number;
-  @ApiProperty({ example: 2 })
+
+  @ApiProperty({ example: '50.00' })
+  @IsDecimal({ decimal_digits: '2' })
   @Column('decimal', { scale: 2 })
   raised: number;
+
   @ManyToOne(() => User, (user) => user.wishes)
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => User)
   owner: User;
+
+  @ApiProperty({ example: 'This is a description.' })
+  @IsString()
   @Column()
   description: string;
+
   @OneToMany(() => Offer, (offer) => offer.item)
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Offer)
   offers: Offer[];
-  @ApiProperty({ example: 2 })
+
+  @ApiProperty({ example: 10 })
+  @IsInt()
   @Column('int', { default: 0 })
   copied: number;
+
   @ManyToMany(() => User)
   @JoinTable()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => User)
   wishers: User[];
 }

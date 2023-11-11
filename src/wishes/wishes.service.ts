@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, In } from 'typeorm';
@@ -17,8 +16,9 @@ export class WishesService {
   async create(createWishDto: CreateWishDto, ownerId: number): Promise<Wish> {
     const wish = this.wishesRepository.create({
       ...createWishDto,
-      raised: createWishDto.raised !== undefined ? createWishDto.raised : 0, // Здесь устанавливаем значение по умолчанию, если raised не предоставлено
       owner: { id: ownerId },
+      raised: createWishDto.raised !== undefined ? createWishDto.raised : 0, // Здесь устанавливаем значение по умолчанию, если raised не предоставлено
+
     });
     return this.wishesRepository.save(wish);
   }

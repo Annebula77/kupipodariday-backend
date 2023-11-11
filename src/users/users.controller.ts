@@ -21,14 +21,15 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Wish } from '../wishes/entities/wish.entity';
 import { SearchUsersDto } from './dto/search-user.dto';
+import { UserProfileResponseDto } from './dto/response-user.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
+  @UseGuards(JwtAuthGuard)
   @Get('me')
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Profile retrieved', type: User })
@@ -38,6 +39,7 @@ export class UsersController {
     return req.user;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch('me')
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiBody({ type: UpdateUserDto })
@@ -49,6 +51,7 @@ export class UsersController {
     return this.usersService.update(req.user.id, updateUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('me/wishes')
   @ApiOperation({ summary: 'Get current user wishes' })
   @ApiResponse({ status: 200, description: 'Wishes retrieved', type: [Wish] })
@@ -58,21 +61,23 @@ export class UsersController {
     return this.usersService.getUserWishes(req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':username')
   @ApiOperation({ summary: 'Get user by username' })
-  @ApiResponse({ status: 200, description: 'User retrieved', type: User })
+  @ApiResponse({ status: 200, description: 'User retrieved', type: UserProfileResponseDto })
   async getUser(@Body() searchUsersDto: SearchUsersDto): Promise<User> {
-    return this.usersService.findUserByUsername(searchUsersDto.quiry);
+    return this.usersService.findUserByUsername(searchUsersDto.query);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('find')
   @ApiOperation({ summary: 'Search for users' })
-  @ApiResponse({ status: 200, description: 'Search results', type: [User] })
-  async searchUsers(@Body() searchUsersDto: SearchUsersDto): Promise<User[]> {
-    return this.usersService.searchUsers(searchUsersDto.quiry);
+  @ApiResponse({ status: 200, description: 'Search results', type: [UserProfileResponseDto] })
+  async searchUsers(@Body() searchUsersDto: SearchUsersDto): Promise<UserProfileResponseDto[]> {
+    return this.usersService.searchUsers(searchUsersDto.query);
   }
 
-  @Get(':username/wishes')
+  @UseGuards(JwtAuthGuard)
   @Get(':username/wishes')
   @ApiOperation({ summary: 'Get wishes of a user by username' })
   @ApiResponse({ status: 200, description: 'Wishes retrieved', type: [Wish] })
