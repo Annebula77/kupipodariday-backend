@@ -34,11 +34,11 @@ import {
 
 @ApiTags('wishlists')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('wishlists')
 export class WishlistsController {
-  constructor(private readonly wishlistsService: WishlistsService) {}
+  constructor(private readonly wishlistsService: WishlistsService) { }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'Create a new wishlist' })
   @ApiResponse({
@@ -55,6 +55,7 @@ export class WishlistsController {
     return this.wishlistsService.create(createWishlistDto, req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   @ApiOperation({ summary: 'Get all wishlists of the logged-in user' })
   @ApiResponse({
@@ -66,6 +67,7 @@ export class WishlistsController {
     return this.wishlistsService.findAll(req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Get wishlist by ID' })
   @ApiResponse({
@@ -79,6 +81,7 @@ export class WishlistsController {
     return this.wishlistsService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Update wishlist by ID' })
   @ApiResponse({
@@ -98,6 +101,7 @@ export class WishlistsController {
     return this.wishlistsService.update(+id, updateWishlistDto, req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete wishlist by ID' })
   @ApiResponse({ status: 200, description: 'Wishlist deleted successfully.' })
@@ -111,6 +115,7 @@ export class WishlistsController {
     return this.wishlistsService.remove(+id, req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('search')
   @ApiOperation({ summary: 'Search for wishlists by description or name' })
   @ApiResponse({

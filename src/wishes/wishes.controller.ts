@@ -32,10 +32,10 @@ import { NOT_FOUND_GENERAL, WISH_OWNER_FORBIDDEN } from '../utils/consts';
 @ApiBearerAuth()
 @Controller('wishes')
 export class WishesController {
-  constructor(private readonly wishesService: WishesService) {}
+  constructor(private readonly wishesService: WishesService) { }
+
 
   @UseGuards(JwtAuthGuard)
-  @Post()
   @ApiOperation({ summary: 'Create a new wish' })
   @ApiResponse({
     status: 201,
@@ -44,6 +44,7 @@ export class WishesController {
   })
   @ApiBody({ type: CreateWishDto })
   @ApiForbiddenResponse({ description: WISH_OWNER_FORBIDDEN })
+  @Post()
   async createWish(
     @Body() createWishDto: CreateWishDto,
     @Request() req: Request & { user: User },
@@ -51,30 +52,32 @@ export class WishesController {
     return this.wishesService.create(createWishDto, req.user.id);
   }
 
-  @Get('/last')
+
   @ApiOperation({ summary: 'Get the most recent wishes' })
   @ApiResponse({
     status: 200,
     description: 'Recent wishes retrieved',
     type: [Wish],
   })
+  @Get('/last')
   async getLastWishes(): Promise<Wish[]> {
     return this.wishesService.getRecentWishes();
   }
 
-  @Get('/top')
+
   @ApiOperation({ summary: 'Get the most popular wishes' })
   @ApiResponse({
     status: 200,
     description: 'Popular wishes retrieved',
     type: [Wish],
   })
+  @Get('/top')
   async getPopularWishes(): Promise<Wish[]> {
     return this.wishesService.getPupularWishes();
   }
 
+
   @UseGuards(JwtAuthGuard)
-  @Get(':id')
   @ApiOperation({ summary: 'Get a wish by ID' })
   @ApiResponse({
     status: 200,
@@ -82,12 +85,13 @@ export class WishesController {
     type: CreateWishDto,
   })
   @ApiParam({ name: 'id', description: 'ID of the wish' })
+  @Get(':id')
   async findWishById(@Param('id') id: string) {
     return this.wishesService.getWishInfo(+id);
   }
 
+
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
   @ApiOperation({ summary: 'Update a wish by ID' })
   @ApiResponse({
     status: 200,
@@ -98,6 +102,7 @@ export class WishesController {
   @ApiBody({ type: UpdateWishDto })
   @ApiNotFoundResponse({ description: NOT_FOUND_GENERAL }) // Если желание не найдено
   @ApiForbiddenResponse({ description: WISH_OWNER_FORBIDDEN }) // Если попытка обновить не своё желание
+  @Patch(':id')
   async updateWish(
     @Param('id') id: string,
     @Body() updateWishDto: UpdateWishDto,
@@ -106,13 +111,14 @@ export class WishesController {
     return this.wishesService.update(+id, updateWishDto, req.user.id);
   }
 
+
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
   @ApiOperation({ summary: 'Delete a wish by ID' })
   @ApiResponse({ status: 204, description: 'Wish deleted' })
   @ApiParam({ name: 'id', description: 'ID of the wish to delete' })
   @ApiNotFoundResponse({ description: NOT_FOUND_GENERAL }) // Если желание не найдено
   @ApiForbiddenResponse({ description: WISH_OWNER_FORBIDDEN }) // Если попытка удалить не своё желание
+  @Delete(':id')
   async remove(
     @Param('id') id: string,
     @Request() req: Request & { user: User },
@@ -120,11 +126,12 @@ export class WishesController {
     return this.wishesService.remove(+id, req.user.id);
   }
 
+
   @UseGuards(JwtAuthGuard)
-  @Post(':id/copy')
   @ApiOperation({ summary: 'Copy a wish by ID' })
   @ApiResponse({ status: 201, description: 'Wish copied', type: Wish })
   @ApiParam({ name: 'id', description: 'ID of the wish to copy' })
+  @Post(':id/copy')
   async copyWish(
     @Param('id') wishId: string,
     @Request() req: Request & { user: User },
@@ -132,7 +139,7 @@ export class WishesController {
     return this.wishesService.copyWish(+wishId, req.user.id);
   }
 
-  @Get('/search')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Search for wishes by description or name' })
   @ApiResponse({ status: 200, description: 'Wishes found', type: [Wish] })
   @ApiParam({
@@ -145,6 +152,7 @@ export class WishesController {
     required: false,
     description: 'Search wishes by name',
   })
+  @Get('/search')
   async findWishes(
     @Query('description') description: string,
     @Query('name') name: string,

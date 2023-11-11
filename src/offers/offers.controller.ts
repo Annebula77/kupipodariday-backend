@@ -26,12 +26,11 @@ import { NOT_FOUND_GENERAL, WISH_SELF_FORBIDDEN } from '../utils/consts';
 
 @ApiTags('offers')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('offers')
 export class OffersController {
-  constructor(private readonly offersService: OffersService) {}
+  constructor(private readonly offersService: OffersService) { }
 
-  @Post()
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Create a new offer' })
   @ApiResponse({
     status: 201,
@@ -40,14 +39,15 @@ export class OffersController {
   })
   @ApiBody({ type: CreateOfferDto })
   @ApiForbiddenResponse({ description: WISH_SELF_FORBIDDEN })
-  createOffer(
+  @Post()
+  async createOffer(
     @Body() createOfferDto: CreateOfferDto,
     @Request() req: Request & { user: User },
   ): Promise<Offer> {
     return this.offersService.create(createOfferDto, req.user.id);
   }
 
-  @Get()
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get all offers' })
   @ApiResponse({
     status: 200,
@@ -55,11 +55,12 @@ export class OffersController {
     type: [Offer],
   })
   @ApiNotFoundResponse({ description: NOT_FOUND_GENERAL })
-  getOffers(): Promise<Offer[]> {
+  @Get()
+  async getOffers(): Promise<Offer[]> {
     return this.offersService.findAll();
   }
 
-  @Get(':id')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get an offer by ID' })
   @ApiResponse({
     status: 200,
@@ -67,7 +68,8 @@ export class OffersController {
     type: Offer,
   })
   @ApiParam({ name: 'id', type: 'string', description: 'Offer ID' })
-  getOffer(@Param('id') id: string): Promise<Offer> {
+  @Get(':id')
+  async getOffer(@Param('id') id: string): Promise<Offer> {
     return this.offersService.findOne(+id);
   }
 }
