@@ -73,15 +73,21 @@ export class UsersService {
       about: user.about,
       avatar: user.avatar,
       email: user.email,
-      createdAt: user.createdAt.toISOString(), // Преобразование в строку ISO
-      updatedAt: user.updateAt.toISOString(), // Обратите внимание на опечатку в имени поля `updateAt` - должно быть `updatedAt`
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updateAt.toISOString(),
     }));
   }
 
   async findUserByUsername(query: string): Promise<User> {
-    return this.usersRepository.findOne({
-      where: [{ username: Like(`%${query}%`) }],
+    const user = await this.usersRepository.findOne({
+      where: { username: Like(`%${query}%`) },
     });
+
+    if (!user) {
+      throw new NotFoundException(`User with username ${query} not found.`);
+    }
+
+    return user
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {

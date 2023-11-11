@@ -64,7 +64,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Get(':username')
   @ApiOperation({ summary: 'Get user by username' })
-  @ApiResponse({ status: 200, description: 'User retrieved', type: User })
+  @ApiResponse({ status: 200, description: 'User retrieved', type: UserProfileResponseDto })
   async getUser(@Body() searchUsersDto: SearchUsersDto): Promise<User> {
     return this.usersService.findUserByUsername(searchUsersDto.query);
   }

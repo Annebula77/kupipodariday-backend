@@ -1,37 +1,22 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   ManyToOne,
   ManyToMany,
   JoinTable,
   OneToMany,
 } from 'typeorm';
+import { MyBaseEntity } from '../../utils/base.entity';
 import { User } from '../../users/entities/user.entity';
 import { Offer } from '../../offers/entities/offer.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsUrl, IsDecimal, IsInt, IsDate, ValidateNested, IsArray } from 'class-validator';
+import { IsString, IsNotEmpty, IsUrl, IsDecimal, IsInt, ValidateNested, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 
 @Entity()
-export class Wish {
-  @ApiProperty({ example: 1 })
-  @PrimaryGeneratedColumn()
-  id: number;
+export class Wish extends MyBaseEntity {
 
-  @ApiProperty({ example: '2021-04-12T06:25:43.511Z' })
-  @IsDate()
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @ApiProperty({ example: '2021-04-12T06:25:43.511Z' })
-  @IsDate()
-  @UpdateDateColumn()
-  updateAt: Date;
-
-  @ApiProperty({ example: 'Nick' })
+  @ApiProperty({ example: 'Chair' })
   @IsString()
   @IsNotEmpty()
   @Column()
