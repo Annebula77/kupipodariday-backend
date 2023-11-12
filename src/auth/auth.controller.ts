@@ -24,9 +24,13 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'User signed in', type: LoginResponseDto })
   @ApiNotFoundResponse({ description: USER_NOT_FOUND })
   async signinUser(@Request() req: Request & { user: User }): Promise<LoginResponseDto> {
-    return this.authService.login(req.user);
+    try {
+      const loginResponse = await this.authService.login(req.user);
+      return loginResponse;
+    } catch (error) {
+      throw error;
+    }
   }
-
   @Post("signup")
   @ApiOperation({ summary: 'Sign up new user' })
   @ApiResponse({ status: 201, description: 'User signed up', type: LoginResponseDto })

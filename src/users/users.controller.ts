@@ -23,6 +23,7 @@ import { Wish } from '../wishes/entities/wish.entity';
 import { SearchUsersDto } from './dto/search-user.dto';
 import { UserProfileResponseDto } from './dto/response-user.dto';
 
+
 @ApiTags('users')
 @ApiBearerAuth()
 @Controller('users')
@@ -65,8 +66,13 @@ export class UsersController {
   @Get(':username')
   @ApiOperation({ summary: 'Get user by username' })
   @ApiResponse({ status: 200, description: 'User retrieved', type: UserProfileResponseDto })
-  async getUser(@Body() searchUsersDto: SearchUsersDto): Promise<User> {
-    return this.usersService.findUserByUsername(searchUsersDto.query);
+  async getUser(@Param('username') username: string): Promise<UserProfileResponseDto> {
+    try {
+      const userProfile = await this.usersService.findUserByUsername(username);
+      return userProfile;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @UseGuards(JwtAuthGuard)
@@ -74,14 +80,25 @@ export class UsersController {
   @ApiOperation({ summary: 'Search for users' })
   @ApiResponse({ status: 200, description: 'Search results', type: [UserProfileResponseDto] })
   async searchUsers(@Body() searchUsersDto: SearchUsersDto): Promise<UserProfileResponseDto[]> {
-    return this.usersService.searchUsers(searchUsersDto.query);
+    try {
+      const users = await this.usersService.searchUsers(searchUsersDto.query);
+      return users;
+    } catch (error) {
+      throw error;
+    }
   }
+
 
   @UseGuards(JwtAuthGuard)
   @Get(':username/wishes')
   @ApiOperation({ summary: 'Get wishes of a user by username' })
   @ApiResponse({ status: 200, description: 'Wishes retrieved', type: [Wish] })
   async getUserWishes(@Param('username') username: string): Promise<Wish[]> {
-    return this.usersService.getOtherUserWishes(username);
+    try {
+      const wishes = await this.usersService.getOtherUserWishes(username);
+      return wishes;
+    } catch (error) {
+      throw error;
+    }
   }
 }

@@ -27,6 +27,8 @@ import { UpdateWishDto } from './dto/update-wish.dto';
 import { User } from '../users/entities/user.entity';
 import { Wish } from './entities/wish.entity';
 import { NOT_FOUND_GENERAL, WISH_OWNER_FORBIDDEN } from '../utils/consts';
+import { FindOneOptions } from 'typeorm';
+
 
 @ApiTags('wishes')
 @ApiBearerAuth()
@@ -73,21 +75,20 @@ export class WishesController {
   })
   @Get('/top')
   async getPopularWishes(): Promise<Wish[]> {
-    return this.wishesService.getPupularWishes();
+    return this.wishesService.getPopularWishes();
   }
 
 
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get a wish by ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Wish retrieved',
-    type: CreateWishDto,
-  })
-  @ApiParam({ name: 'id', description: 'ID of the wish' })
   @Get(':id')
   async findWishById(@Param('id') id: string) {
-    return this.wishesService.getWishInfo(+id);
+    // Создаем объект FindOneOptions, указывая условия поиска
+    const query: FindOneOptions<Wish> = {
+      where: { id: +id }, // Преобразование строки в число
+      // можно добавить другие параметры, например, relations, если нужно
+    };
+
+    // Передаем объект query в метод findWish сервиса
+    return this.wishesService.findWish(query);
   }
 
 
@@ -103,14 +104,18 @@ export class WishesController {
   @ApiNotFoundResponse({ description: NOT_FOUND_GENERAL }) // Если желание не найдено
   @ApiForbiddenResponse({ description: WISH_OWNER_FORBIDDEN }) // Если попытка обновить не своё желание
   @Patch(':id')
-  async updateWish(
-    @Param('id') id: string,
+  async updateOne(
+    @Request() req,
+    @Param('id') id: number,
     @Body() updateWishDto: UpdateWishDto,
-    @Request() req: Request & { user: User },
-  ) {
-    return this.wishesService.update(+id, updateWishDto, req.user.id);
+  ): Promise<NonNullable<unknown>> {
+    try {
+      const userId = req.user.id;
+      return await this.wishesService.updateWish(id, updateWishDto, userId);
+    } catch (error) {
+      console.log(error);
+    }
   }
-
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Delete a wish by ID' })

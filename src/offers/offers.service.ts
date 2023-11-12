@@ -14,27 +14,40 @@ import {
   WISH_SELF_FORBIDDEN,
 } from '../utils/consts';
 
+import { User } from '../users/entities/user.entity';
+
 @Injectable()
 export class OffersService {
   constructor(
     @InjectRepository(Offer)
     private offersRepository: Repository<Offer>,
     private wishesService: WishesService,
-  ) {}
+  ) { }
 
-  async create(createOfferDto: CreateOfferDto, userId: number): Promise<Offer> {
-    const wish = await this.wishesService.getWishInfo(createOfferDto.wishId);
-    if (wish.owner.id === userId) {
-      throw new ForbiddenException(WISH_SELF_FORBIDDEN);
+  async create(createOfferDto: CreateOfferDto, user: User) {
+    const wishes = await this.wishesService.findOne(createOfferDto.itemId);
+    const wish = await this.wishesService.findOne(wishes.id);
+    const sum = wish.price - wish.raised;
+    const newRise = Number(wish.raised) + Number(createOfferDto.amount);
+
+    if (wish.owner.id === user.id) {
+      throw new ForbiddenException(
+        WISH_SELF_FORBIDDEN,
+      );
     }
-    if (wish.raised + createOfferDto.amount > wish.price) {
-      throw new ForbiddenException(WISH_OVERPRICE_ERROR);
+
+    if (createOfferDto.amount > sum) {
+      throw new ForbiddenException(
+        WISH_OVERPRICE_ERROR
+      );
     }
-    const offer = this.offersRepository.create({
-      ...createOfferDto,
-      user: { id: userId },
-    });
-    return this.offersRepository.save(offer);
+
+    if (wish.raised === wish.price) {
+      throw new ForbiddenException('нужная сумма уже собрана');
+    }
+
+    await this.wishesService.updateByRise(createOfferDto.itemId, newRise);
+    return await this.offersRepository.save({ ...createOfferDto, user });
   }
 
   async findOne(id: number): Promise<Offer> {

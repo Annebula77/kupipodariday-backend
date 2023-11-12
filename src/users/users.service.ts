@@ -54,12 +54,41 @@ export class UsersService {
     });
   }
 
+  async validateJwt(id: number) {
+    return await this.usersRepository.find({
+      select: {
+        id: true,
+        username: true,
+      },
+      where: {
+        id,
+      },
+    });
+  }
+
   async findUser(id: FindOneOptions<User>): Promise<User> {
     const user = await this.usersRepository.findOne(id);
     if (!user) {
-      throw new NotFoundException(USER_NOT_FOUND);
+      throw new NotFoundException();
     }
     return user;
+  }
+
+  async findOne(id: number): Promise<User> {
+    try {
+      const user = await this.usersRepository.findOneBy({ id });
+      if (!user) {
+        throw new NotFoundException(
+          USER_NOT_FOUND
+        );
+      }
+      return user;
+    } catch (error) {
+      console.error(error);
+      throw new ConflictException(
+        USER_ALREADY_EXISTS_CONFLICT,
+      );
+    }
   }
 
   async searchUsers(query: string): Promise<UserProfileResponseDto[]> {
@@ -78,7 +107,7 @@ export class UsersService {
     }));
   }
 
-  async findUserByUsername(query: string): Promise<User> {
+  async findUserByUsername(query: string): Promise<UserProfileResponseDto> {
     const user = await this.usersRepository.findOne({
       where: { username: Like(`%${query}%`) },
     });
@@ -87,8 +116,17 @@ export class UsersService {
       throw new NotFoundException(`User with username ${query} not found.`);
     }
 
-    return user
+    return {
+      id: user.id,
+      username: user.username,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updateAt.toISOString(),
+    }
   }
+
 
   async update(id: number, updateUserDto: UpdateUserDto) {
     const user = await this.usersRepository.findOne({ where: { id } });
@@ -112,9 +150,9 @@ export class UsersService {
     return user.wishes;
   }
 
-  async getOtherUserWishes(username: string): Promise<Wish[]> {
+  async getOtherUserWishes(query: string): Promise<Wish[]> {
     const user = await this.usersRepository.findOne({
-      where: { username },
+      where: { username: Like(`%${query}%`) },
       relations: ['wishes'],
     });
     if (!user) {

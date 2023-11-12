@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UpdateResult, FindOneOptions } from 'typeorm';
 import { Repository, Like, In } from 'typeorm';
 import { Wish } from './entities/wish.entity';
 import { CreateWishDto } from './dto/create-wish.dto';
@@ -22,10 +23,10 @@ export class WishesService {
     });
     return this.wishesRepository.save(wish);
   }
-  async update(id: number, updateWishDto: UpdateWishDto, userId: number): Promise<Wish> {
+  async updateWish(id: number, updateWishDto: UpdateWishDto, userId: number) {
     const wish = await this.wishesRepository.findOne({
       where: { id: id },
-      relations: ['owner']
+      relations: ['owner: true']
     });
 
     if (!wish) {
@@ -37,12 +38,17 @@ export class WishesService {
       throw new ForbiddenException(WISH_OWNER_FORBIDDEN);
     }
 
-    const updatedWish = this.wishesRepository.merge(wish, updateWishDto);
-    return this.wishesRepository.save(updatedWish);
+    return await this.wishesRepository.update(id, updateWishDto);
+
+  }
+
+  async updateByRise(id: number, newRise: number): Promise<UpdateResult> {
+    return await this.wishesRepository.update({ id: id }, { raised: newRise });
   }
 
 
-  async remove(id: number, userId: number): Promise<void> {
+
+  async remove(id: number, userId: number): Promise<unknown> {
     const wish = await this.wishesRepository.findOne({
       where: { id: id },
       relations: ['owner']
@@ -57,7 +63,8 @@ export class WishesService {
       throw new ForbiddenException(WISH_OWNER_FORBIDDEN);
     }
 
-    await this.wishesRepository.remove(wish);
+    await this.wishesRepository.delete(id);
+    return wish;
   }
 
   async getRecentWishes(): Promise<Wish[]> {
@@ -67,20 +74,32 @@ export class WishesService {
     });
   }
 
-  async getPupularWishes(): Promise<Wish[]> {
+  async getPopularWishes(): Promise<Wish[]> {
     return this.wishesRepository.find({
       order: { copied: 'DESC' },
       take: 20,
     });
   }
 
-  async findUserWishById(id: number, ownerId: number): Promise<Wish> {
-    const wish = await this.wishesRepository.findOne({ where: { id, owner: { id: ownerId } } });
-    if (!wish) {
-      throw new NotFoundException(NOT_FOUND_GENERAL);
-    }
-    return wish;
+
+  async findOne(wishId: number): Promise<Wish> {
+    return await this.wishesRepository.findOne({
+      where: {
+        id: wishId,
+      },
+      relations: {
+        owner: {
+          wishes: true,
+          wishlists: true,
+        },
+        offers: {
+          user: true,
+          item: true,
+        },
+      },
+    });
   }
+
 
   async searchWishesByName(name: string): Promise<Wish[]> {
     return this.wishesRepository.find({ where: { name: Like(`%${name}%`) } });
@@ -91,15 +110,8 @@ export class WishesService {
   }
 
 
-  async getWishInfo(id: number): Promise<Wish> {
-    const wish = await this.wishesRepository.findOne({
-      where: { id: id },
-      relations: ['owner', 'wishers', 'offers']
-    });
-    if (!wish) {
-      throw new NotFoundException(NOT_FOUND_GENERAL);
-    }
-    return wish;
+  async findWish(query: FindOneOptions<Wish>): Promise<Wish> {
+    return this.wishesRepository.findOne(query);
   }
 
   async copyWish(id: number, userId: number): Promise<Wish> {

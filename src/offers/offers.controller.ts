@@ -23,12 +23,18 @@ import {
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { NOT_FOUND_GENERAL, WISH_SELF_FORBIDDEN } from '../utils/consts';
+import { UsersService } from '../users/users.service';
+
+interface UserRequest extends Request {
+  user: User;
+}
 
 @ApiTags('offers')
 @ApiBearerAuth()
 @Controller('offers')
 export class OffersController {
-  constructor(private readonly offersService: OffersService) { }
+  constructor(private readonly offersService: OffersService,
+    private readonly usersService: UsersService) { }
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Create a new offer' })
@@ -42,9 +48,15 @@ export class OffersController {
   @Post()
   async createOffer(
     @Body() createOfferDto: CreateOfferDto,
-    @Request() req: Request & { user: User },
-  ): Promise<Offer> {
-    return this.offersService.create(createOfferDto, req.user.id);
+    @Request() req: UserRequest,
+  ) {
+    const { id } = req.user;
+    try {
+      const user = await this.usersService.findOne(id);
+      return await this.offersService.create(createOfferDto, user);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   @UseGuards(JwtAuthGuard)
